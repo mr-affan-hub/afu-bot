@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFUU AI — Intelligent Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --sidebar: #13161d;
+    --surface: #1a1d26;
+    --surface2: #21242f;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8eaf0;
+    --muted: #7a7f94;
+    --accent: #6C63FF;
+    --accent2: #00D4AA;
+    --accent3: #FF6B9D;
+    --grad: linear-gradient(135deg, #6C63FF, #00D4AA);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 60% 50% at 20% 20%, rgba(108,99,255,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(0,212,170,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 260px;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    padding: 24px 20px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--grad);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  .logo-text span {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .new-chat-btn {
+    margin: 16px;
+    padding: 11px 16px;
+    background: var(--grad);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+
+  .new-chat-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .new-chat-btn:active { transform: translateY(0); }
+
+  .section-label {
+    padding: 12px 20px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .chat-history {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 8px;
+  }
+
+  .chat-history::-webkit-scrollbar { width: 4px; }
+  .chat-history::-webkit-scrollbar-track { background: transparent; }
+  .chat-history::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .history-item {
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .history-item:hover { background: var(--surface); color: var(--text); }
+  .history-item.active { background: var(--surface2); color: var(--text); }
+  .history-item .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; flex-shrink: 0; }
+
+  .sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .user-profile:hover { background: var(--surface); }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    background: var(--grad);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-plan { font-size: 11px; color: var(--muted); }
+
+  /* MAIN */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    min-width: 0;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+  }
+
+  .model-select {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .model-select:hover { border-color: var(--accent); }
+
+  .model-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent2);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .topbar-actions { display: flex; gap: 8px; }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 16px;
+  }
+
+  .icon-btn:hover { background: var(--surface2); border-color: var(--accent); }
+
+  /* CHAT AREA */
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 0;
+    scroll-behavior: smooth;
+  }
+
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-track { background: transparent; }
+  .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .chat-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Welcome screen */
+  .welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .welcome-icon {
+    width: 72px;
+    height: 72px;
+    background: var(--grad);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin-bottom: 24px;
+    box-shadow: 0 0 40px rgba(108,99,255,0.3);
+  }
+
+  .welcome h1 {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .welcome h1 span {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .welcome p {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+
+  .suggestions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .suggestion-card {
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .suggestion-card:hover {
+    border-color: var(--accent);
+    background: var(--surface2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(108,99,255,0.15);
+  }
+
+  .suggestion-card .icon { font-size: 20px; margin-bottom: 8px; }
+  .suggestion-card .title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .suggestion-card .desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  /* Messages */
+  .message {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    margin-top: 2px;
+  }
+
+  .msg-avatar.ai {
+    background: var(--grad);
+    color: white;
+  }
+
+  .msg-avatar.user {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .msg-content { flex: 1; }
+
+  .msg-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .msg-text {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text);
+  }
+
+  .msg-text.ai-text {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0 14px 14px 14px;
+    padding: 14px 18px;
+  }
+
+  .msg-text.user-text {
+    background: rgba(108,99,255,0.12);
+    border: 1px solid rgba(108,99,255,0.2);
+    border-radius: 14px 0 14px 14px;
+    padding: 14px 18px;
+  }
+
+  .msg-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .msg-action-btn {
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .msg-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Typing indicator */
+  .typing {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .typing-dots {
+    display: flex;
+    gap: 5px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0 14px 14px 14px;
+    align-items: center;
+  }
+
+  .typing-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: bounce 1.2s infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; background: var(--accent2); }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; background: var(--accent3); }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); opacity: 0.5; }
+    50% { transform: translateY(-5px); opacity: 1; }
+  }
+
+  /* INPUT AREA */
+  .input-area {
+    padding: 16px 24px 24px;
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+  }
+
+  .input-inner {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .input-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 12px 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .input-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.1);
+  }
+
+  .input-actions-left { display: flex; gap: 6px; }
+
+  .attach-btn {
+    width: 34px;
+    height: 34px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 17px;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .attach-btn:hover { color: var(--text); background: var(--surface2); }
+
+  textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    resize: none;
+    max-height: 160px;
+    line-height: 1.5;
+    align-self: center;
+    padding: 0;
+  }
+
+  textarea::placeholder { color: var(--muted); }
+
+  .send-btn {
+    width: 38px;
+    height: 38px;
+    background: var(--grad);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s, transform 0.15s;
+    flex-shrink: 0;
+  }
+
+  .send-btn:hover { opacity: 0.85; transform: scale(1.05); }
+  .send-btn:active { transform: scale(0.97); }
+  .send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+  .input-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding: 0 2px;
+  }
+
+  .input-footer-left { display: flex; gap: 8px; }
+
+  .tag-btn {
+    padding: 4px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .tag-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  .char-count {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Scrollbar general */
+  * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">✦</div>
+    <div>
+      <div class="logo-text"><span>AFUU</span> AI</div>
+    </div>
+  </div>
+
+  <button class="new-chat-btn" onclick="startNewChat()">
+    <span>＋</span> New conversation
+  </button>
+
+  <div class="section-label">Recent</div>
+  <div class="chat-history" id="chatHistory">
+    <div class="history-item active"><span class="dot"></span>Getting started</div>
+    <div class="history-item"><span>💡</span> Project brainstorm</div>
+    <div class="history-item"><span>🧪</span> Code review session</div>
+    <div class="history-item"><span>📝</span> Blog post outline</div>
+    <div class="history-item"><span>🔍</span> Research summary</div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-profile">
+      <div class="avatar">JD</div>
+      <div>
+        <div class="user-name">John Doe</div>
+        <div class="user-plan">Pro Plan</div>
+      </div>
+      <span style="margin-left:auto;color:var(--muted);font-size:14px">⚙️</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="model-select" onclick="cycleModel()">
+      <div class="model-dot"></div>
+      <span id="modelName">Nova Pro 2.0</span>
+      <span style="color:var(--muted);font-size:12px">▾</span>
+    </div>
+    <div class="topbar-actions">
+      <div class="icon-btn" title="Share">🔗</div>
+      <div class="icon-btn" title="Settings">⚙</div>
+      <div class="icon-btn" title="Theme">🌙</div>
+    </div>
+  </header>
+
+  <!-- CHAT AREA -->
+  <div class="chat-area" id="chatArea">
+    <div class="chat-inner" id="chatInner">
+
+      <!-- Welcome Screen -->
+      <div class="welcome" id="welcomeScreen">
+        <div class="welcome-icon">✦</div>
+        <h1>Hello, I'm <span>AFUU</span></h1>
+        <p>Your intelligent assistant — ask me anything, and I'll help<br>you think, create, code, and explore ideas.</p>
+        <div class="suggestions">
+          <div class="suggestion-card" onclick="sendSuggestion('Explain how neural networks work in simple terms')">
+            <div class="icon">🧠</div>
+            <div class="title">Explain a concept</div>
+            <div class="desc">Break down complex topics clearly</div>
+          </div>
+          <div class="suggestion-card" onclick="sendSuggestion('Write a Java REST API endpoint for user authentication')">
+            <div class="icon">💻</div>
+            <div class="title">Write some code</div>
+            <div class="desc">Java, Python, HTML, CSS and more</div>
+          </div>
+          <div class="suggestion-card" onclick="sendSuggestion('Help me brainstorm a marketing campaign for a local business')">
+            <div class="icon">💡</div>
+            <div class="title">Brainstorm ideas</div>
+            <div class="desc">Creative thinking and planning</div>
+          </div>
+          <div class="suggestion-card" onclick="sendSuggestion('Summarize the key points of machine learning')">
+            <div class="icon">📄</div>
+            <div class="title">Summarize content</div>
+            <div class="desc">Extract key insights fast</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- INPUT AREA -->
+  <div class="input-area">
+    <div class="input-inner">
+      <div class="input-box">
+        <div class="input-actions-left">
+          <button class="attach-btn" title="Attach file">📎</button>
+          <button class="attach-btn" title="Voice input">🎤</button>
+        </div>
+        <textarea 
+          id="msgInput" 
+          placeholder="Message afuu…" 
+          rows="1"
+          oninput="autoResize(this); updateCharCount(this)"
+          onkeydown="handleKey(event)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+          ↑
+        </button>
+      </div>
+      <div class="input-footer">
+        <div class="input-footer-left">
+          <button class="tag-btn">🔍 Search</button>
+          <button class="tag-btn">📊 Analyze</button>
+          <button class="tag-btn">🎨 Create</button>
+        </div>
+        <div class="char-count" id="charCount">0 / 4000</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const models = ['AFUU Pro 2.0', 'AFUU Flash 1.5', 'AFUU Lite 1.0'];
+  let modelIdx = 0;
+
+  const aiResponses = [
+    "That's a great question! I've analyzed your input and here's what I found. The concept you're asking about involves several interconnected ideas that build upon each other. Let me walk you through the key points systematically so you get the clearest picture possible.",
+    "I'd be happy to help with that! Here's a comprehensive breakdown: First, let's establish the foundational concepts. Then we'll explore the practical applications, and finally tie everything together with real-world examples you can immediately apply.",
+    "Excellent! Based on your request, I've prepared a detailed response. The most important thing to understand here is the underlying principle, which once grasped, makes everything else fall into place naturally.",
+    "Great choice! Let me craft something tailored specifically to your needs. I'll consider the context, the constraints, and the best practices in this area to give you the most accurate and useful response possible.",
+    "I understand what you're looking for. Here's my take: the solution involves a multi-step approach where each component plays a specific role. I'll explain each part clearly so you can adapt it to your exact situation."
+  ];
+
+  let msgCount = 0;
+  const input = document.getElementById('msgInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  input.addEventListener('input', () => {
+    sendBtn.disabled = input.value.trim() === '';
+  });
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+  }
+
+  function updateCharCount(el) {
+    document.getElementById('charCount').textContent = `${el.value.length} / 4000`;
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendBtn.disabled) sendMessage();
+    }
+  }
+
+  function sendSuggestion(text) {
+    input.value = text;
+    autoResize(input);
+    updateCharCount(input);
+    sendBtn.disabled = false;
+    sendMessage();
+  }
+
+  function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    // Hide welcome
+    const welcome = document.getElementById('welcomeScreen');
+    if (welcome) welcome.style.display = 'none';
+
+    addMessage('user', text);
+    input.value = '';
+    input.style.height = 'auto';
+    updateCharCount(input);
+    sendBtn.disabled = true;
+
+    showTyping();
+
+    setTimeout(() => {
+      removeTyping();
+      const resp = aiResponses[msgCount % aiResponses.length];
+      msgCount++;
+      addMessage('ai', resp);
+    }, 1400 + Math.random() * 600);
+  }
+
+  function addMessage(role, text) {
+    const inner = document.getElementById('chatInner');
+    const div = document.createElement('div');
+    div.className = 'message';
+    div.innerHTML = role === 'ai' ? `
+      <div class="msg-avatar ai">✦</div>
+      <div class="msg-content">
+        <div class="msg-name">NOVA AI</div>
+        <div class="msg-text ai-text">${text}</div>
+        <div class="msg-actions">
+          <button class="msg-action-btn">👍</button>
+          <button class="msg-action-btn">👎</button>
+          <button class="msg-action-btn">📋 Copy</button>
+          <button class="msg-action-btn">🔄 Retry</button>
+        </div>
+      </div>
+    ` : `
+      <div class="msg-avatar user">JD</div>
+      <div class="msg-content">
+        <div class="msg-name">YOU</div>
+        <div class="msg-text user-text">${text}</div>
+      </div>
+    `;
+    inner.appendChild(div);
+    scrollToBottom();
+  }
+
+  function showTyping() {
+    const inner = document.getElementById('chatInner');
+    const div = document.createElement('div');
+    div.className = 'typing';
+    div.id = 'typingIndicator';
+    div.innerHTML = `
+      <div class="msg-avatar ai">✦</div>
+      <div class="typing-dots">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    `;
+    inner.appendChild(div);
+    scrollToBottom();
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typingIndicator');
+    if (t) t.remove();
+  }
+
+  function scrollToBottom() {
+    const area = document.getElementById('chatArea');
+    area.scrollTop = area.scrollHeight;
+  }
+
+  function startNewChat() {
+    const inner = document.getElementById('chatInner');
+    inner.innerHTML = `
+      <div class="welcome" id="welcomeScreen">
+        <div class="welcome-icon">✦</div>
+        <h1>Hello, I'm <span>AFUU</span></h1>
+        <p>Your intelligent assistant — ask me anything, and I'll help<br>you think, create, code, and explore ideas.</p>
+        <div class="suggestions">
+          <div class="suggestion-card" onclick="sendSuggestion('Explain how neural networks work in simple terms')">
+            <div class="icon">🧠</div><div class="title">Explain a concept</div><div class="desc">Break down complex topics clearly</div>
+          </div>
+          <div class="suggestion-card" onclick="sendSuggestion('Write a Java REST API endpoint for user authentication')">
+            <div class="icon">💻</div><div class="title">Write some code</div><div class="desc">Java, Python, HTML, CSS and more</div>
+          </div>
+          <div class="suggestion-card" onclick="sendSuggestion('Help me brainstorm a marketing campaign for a local business')">
+            <div class="icon">💡</div><div class="title">Brainstorm ideas</div><div class="desc">Creative thinking and planning</div>
+          </div>
+          <div class="suggestion-card" onclick="sendSuggestion('Summarize the key points of machine learning')">
+            <div class="icon">📄</div><div class="title">Summarize content</div><div class="desc">Extract key insights fast</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function cycleModel() {
+    modelIdx = (modelIdx + 1) % models.length;
+    document.getElementById('modelName').textContent = models[modelIdx];
+  }
+</script>
+</body>
+</html>
